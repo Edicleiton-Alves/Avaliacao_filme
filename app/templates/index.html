@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio Técnico - Filmes e Avaliações</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+
+<body>
+    <div class="container my-5">
+        <h2 class="mb-4">Filmes e Avaliações</h2>
+
+        <!-- Botão para adicionar filmes -->
+        <button id="addMoviesBtn" class="btn btn-success mb-3">Adicionar Filmes</button>
+
+        <div class="table-responsive">
+            <table id="dynamicTable" class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Título</th>
+                        <th scope="col">Ano de Lançamento</th>
+                        <th scope="col">Gênero</th>
+                        <th scope="col">Diretor</th>
+                        <th scope="col">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados dos filmes serão injetados aqui -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginação -->
+        <nav>
+            <ul id="pagination" class="pagination justify-content-center mt-4">
+                <!-- Itens de paginação serão inseridos aqui -->
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Modal para editar filme -->
+    <div class="modal fade" id="editMovieModal" tabindex="-1" aria-labelledby="editMovieModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editMovieModalLabel">Editar Filme</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editMovieForm">
+                        <!-- Campo oculto para armazenar o ID do filme -->
+                        <input type="hidden" id="editFilmId">
+                        <div class="mb-3">
+                            <label for="editTitle" class="form-label">Título</label>
+                            <input type="text" class="form-control" id="editTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editYear" class="form-label">Ano de Lançamento</label>
+                            <input type="number" class="form-control" id="editYear" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editGenre" class="form-label">Gênero</label>
+                            <input type="text" class="form-control" id="editGenre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editDirector" class="form-label">Diretor</label>
+                            <input type="text" class="form-control" id="editDirector" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para ver avaliações -->
+    <div class="modal fade" id="avaliacoesModal" tabindex="-1" aria-labelledby="avaliacoesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="avaliacoesModalLabel">Avaliações do Filme</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul id="avaliacoesList" class="list-group">
+                        <!-- Avaliações serão carregadas dinamicamente aqui -->
+                    </ul>
+                    <button id="addReviewBtn" class="btn btn-success mt-3" data-bs-toggle="modal" data-bs-target="#addReviewModal">
+                        Adicionar Avaliação
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para adicionar avaliações -->
+    <div class="modal fade" id="addReviewModal" tabindex="-1" aria-labelledby="addReviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addReviewModalLabel">Adicionar Avaliação</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addReviewForm">
+                        <input type="hidden" id="filmIdForReview">
+                        <div class="mb-3">
+                            <label for="reviewerName" class="form-label">Nome do Avaliador</label>
+                            <input type="text" class="form-control" id="reviewerName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reviewComment" class="form-label">Comentário</label>
+                            <textarea class="form-control" id="reviewComment" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reviewRating" class="form-label">Nota</label>
+                            <input type="number" class="form-control" id="reviewRating" min="1" max="10" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Adicionar Avaliação</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function () {
+            const rowsPerPage = 3;
+            let currentPage = 1;
+            let filmes = [];
+            let totalFilmes = 0;
+
+            // Inicialização
+            fetchFilmes(); // Carrega filmes ao carregar a página
+            
+            // Função para buscar filmes da API
+            function fetchFilmes() {
+                fetch('/api/filmes')  // Requisição para o endpoint da API que retorna os filmes em JSON
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Falha ao buscar filmes');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Dados recebidos:', data); // Verifique os dados recebidos
+                        filmes = data.filmes; // Armazena os filmes recebidos
+                        totalFilmes = data.total_filmes; // Armazena o total de filmes
+                        renderTable(currentPage);
+                        renderPagination();
+                    })
+                    .catch(error => {
+                        console.error('Erro ao buscar filmes:', error);
+                    });
+            }
+
+            // Renderizar tabela com filmes
+            function renderTable(page) {
+                const tbody = $('#dynamicTable tbody');
+                tbody.empty();
+        
+                const start = (page - 1) * rowsPerPage;
+                const end = start + rowsPerPage;
+                const pageData = filmes.slice(start, end);
+        
+                pageData.forEach(filme => {
+                    tbody.append(`
+                        <tr>
+                            <td>${filme.id}</td>
+                            <td>${filme.titulo}</td>
+                            <td>${filme.ano_lancamento}</td>
+                            <td>${filme.genero}</td>
+                            <td>${filme.diretor}</td>
+                            <td>
+                                <button data-id="${filme.id}" class="btn btn-sm btn-primary me-1 btnEditar">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </button>
+                                <button data-id="${filme.id}" class="btn btn-sm btn-info me-1 btnVerAvaliacoes">
+                                    <i class="bi bi-eye"></i> Avaliações
+                                </button>
+                                <button class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i> Excluir
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
+
+            // Renderizar paginação
+            function renderPagination() {
+                const totalPages = Math.ceil(totalFilmes / rowsPerPage);
+                const pagination = $('#pagination');
+                pagination.empty();
+        
+                for (let i = 1; i <= totalPages; i++) {
+                    pagination.append(`
+                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <button class="page-link" data-page="${i}">${i}</button>
+                        </li>
+                    `);
+                }
+            }
+        
+            // Função para adicionar filmes
+            function addFilmes() {
+                fetch('/adicionar_filmes_api', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message); // Mensagem de sucesso
+                    fetchFilmes();  // Recarrega a tabela com filmes
+                })
+                .catch(error => {
+                    console.error('Erro ao adicionar filmes:', error);
+                });
+            }
+        
+            // Função para editar filme
+            $(document).on('click', '.btnEditar', function() {
+                const filmeId = $(this).closest('tr').find('td:first').text(); // Obtém o ID do filme e remove espaços
+                console.log('Filme ID capturado:', filmeId);
+            
+                const filme = filmes.find(f => f.id == parseInt(filmeId, 10)); // Busca pelo ID no array
+        
+            
+                // Preenche os campos do formulário com as informações do filme
+                $('#editTitle').val(filme.titulo);
+                $('#editYear').val(filme.ano_lancamento);
+                $('#editGenre').val(filme.genero);
+                $('#editDirector').val(filme.diretor);
+                $('#editFilmId').val(filme.id); // Define o ID no campo oculto
+            
+                // Mostra o modal
+                $('#editMovieModal').modal('show');
+            });
+
+            // Registra o evento de submissão do formulário de edição
+            $('#editMovieForm').submit(function(e) {
+                e.preventDefault();
+
+                const filmeId = $('#editFilmId').val(); // Obtém o ID do filme do campo oculto
+                const filme = filmes.find(f => f.id == filmeId);  // Encontra o filme no array
+
+                const updatedFilme = {
+                    id: filmeId,
+                    titulo: $('#editTitle').val(),
+                    ano_lancamento: $('#editYear').val(),
+                    genero: $('#editGenre').val(),
+                    diretor: $('#editDirector').val()
+                };
+
+                // Envia a atualização do filme para a API
+                fetch(`/filmes/${filmeId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedFilme)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Filme atualizado com sucesso!');
+                    $('#editMovieModal').modal('hide');  // Fecha o modal
+                    fetchFilmes();  // Recarrega a lista de filmes
+                })
+                .catch(error => {
+                    console.error('Erro ao editar filme:', error);
+                });
+            });
+        
+            // Função para excluir filme
+            $(document).on('click', '.btn-danger', function() {
+                const filmeId = $(this).closest('tr').find('td:first').text();  // Obtém o ID do filme
+                if (confirm('Tem certeza de que deseja excluir este filme?')) {
+                    fetch(`/filmes/${filmeId}`, {
+                        method: 'DELETE',
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message === 'Filme excluído com sucesso!') {
+                            alert(data.message);
+                            fetchFilmes();  // Recarrega a lista de filmes
+                        } else {
+                            alert('Erro ao excluir filme.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                    });
+                }
+            });
+        
+            // Mudar página
+            $('#pagination').on('click', '.page-link', function () {
+                currentPage = parseInt($(this).data('page'));
+                renderTable(currentPage);
+                renderPagination();
+            });
+        
+            // Ao clicar no botão "Adicionar Filmes"
+            $('#addMoviesBtn').click(function () {
+                addFilmes();  // Chama a função para adicionar filmes
+            });
+
+            // Evento para exibir avaliações
+            $(document).on('click', '.btnVerAvaliacoes', function() {
+                const filmeId = $(this).data('id'); // Obtém o ID do filme
+                $('#filmIdForReview').val(filmeId);
+
+                // Faz a requisição para obter as avaliações
+                fetch(`/filmes/${filmeId}/avaliacoes`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const avaliacoesList = $('#avaliacoesList');
+                        avaliacoesList.empty(); // Limpa o conteúdo anterior
+
+                        if (data.avaliacoes && data.avaliacoes.length > 0) {
+                            data.avaliacoes.forEach(avaliacao => {
+                                avaliacoesList.append(`
+                                    <li class="list-group-item">
+                                        <strong>${avaliacao.nome_avaliador}:</strong> ${avaliacao.comentario} 
+                                        <span class="text-muted">(${avaliacao.nota}/10)</span>
+                                    </li>
+                                `);
+                            });
+                        } else {
+                            avaliacoesList.append('<li class="list-group-item">Sem avaliações disponíveis.</li>');
+                        }
+
+                        // Exibe o modal
+                        $('#avaliacoesModal').modal('show');
+                    })
+                    .catch(error => {
+                        console.error('Erro ao buscar avaliações:', error);
+                        alert('Erro ao carregar avaliações.');
+                    });
+            });
+
+            // Evento para adicionar avaliações
+            $('#addReviewForm').submit(function (e) {
+                e.preventDefault();
+                const filmeId = $('#filmIdForReview').val();
+                const avaliacao = {
+                    nome_avaliador: $('#reviewerName').val(),
+                    comentario: $('#reviewComment').val(),
+                    nota: $('#reviewRating').val()
+                };
+
+                fetch(`/filmes/${filmeId}/avaliacoes`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(avaliacao)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert('Avaliação adicionada com sucesso!');
+                        $('#addReviewModal').modal('hide');
+                        fetchFilmes(); // Atualiza a lista de filmes
+                    })
+                    .catch(error => console.error('Erro ao adicionar avaliação:', error));
+            });
+
+        });
+        
+    </script>
+</body>
+
+</html>
